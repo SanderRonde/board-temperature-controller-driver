@@ -1,34 +1,64 @@
 #include <Arduino.h>
+#include <util.h>
 #include <string.h>
 
-namespace Util {
-	const int SPLIT_LEN = 10;
-	char** split_string(String str) {
-		char** strings = (char**) malloc(sizeof(char*) * SPLIT_LEN);
-		for (int i = 0; i < SPLIT_LEN; i++) {
-			strings[i] = NULL;
+namespace Util
+{
+	char **split_string(char *a_str, const char a_delim)
+	{
+		char **result = 0;
+		size_t count = 0;
+		char *tmp = a_str;
+		char *last_comma = 0;
+		char delim[2];
+		delim[0] = a_delim;
+		delim[1] = 0;
+
+		/* Count how many elements will be extracted. */
+		while (*tmp)
+		{
+			if (a_delim == *tmp)
+			{
+				count++;
+				last_comma = tmp;
+			}
+			tmp++;
 		}
 
-		int str_index = 0;
-		const char* delim = { " " };
-		char* copy = (char*) malloc(sizeof(char) * str.length());
-		strcpy(copy, str.c_str());
-		char* ptr = strtok(copy, delim);
-		while (ptr != NULL) {
-			strings[str_index++] = strdup(ptr);
-			ptr = strtok(NULL, delim);
-		}
-		free(copy);
+		/* Add space for trailing token. */
+		count += last_comma < (a_str + strlen(a_str) - 1);
 
-		return strings;
+		/* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+		count++;
+
+		result = (char **)malloc(sizeof(char *) * count);
+
+		if (result)
+		{
+			size_t idx = 0;
+			char *token = strtok(a_str, delim);
+
+			while (token)
+			{
+				*(result + idx++) = strdup(token);
+				token = strtok(0, delim);
+			}
+			*(result + idx) = 0;
+		}
+
+		return result;
 	}
 
-	void free_split(char** strings) {
-		for (int i = 0; i < SPLIT_LEN; i++) {
-			if (strings[i] != NULL) {
+	void free_split(char **strings)
+	{
+		for (int i = 0; strings[i]; i++)
+		{
+			if (strings[i] != NULL)
+			{
 				free(strings[i]);
 			}
 		}
 		free(strings);
 	}
-}
+} // namespace Util

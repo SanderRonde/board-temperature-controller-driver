@@ -19,6 +19,7 @@ namespace Telnet {
 		client.write(_name);
 		client.write("\n");
 		client.write("Hi\n");
+		client.write(("Reset reason: " + ESP.getResetReason() + "\n").c_str());
 	}
 
 	void setup(const char* name) {

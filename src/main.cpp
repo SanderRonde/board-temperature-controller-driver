@@ -2,15 +2,18 @@
 #include <Arduino.h>
 #include <config.h>
 #include <telnet.h>
+#include <motor.h>
+#include <temp.h>
 #include <ota.h>
 #include <net.h>
 
-void setup() {
+void setup()
+{
 	Serial.begin(115200);
 	Serial.println("Booting");
 
 	// Setup telnet
-	Telnet::setup(NAME);
+	Telnet::setup("temp-controller-board");
 
 	// Setup OTA and wait
 	OTA::setup();
@@ -19,15 +22,17 @@ void setup() {
 	LOGN("Stopped waiting");
 
 	// Setup the rest
-	// TODO:
+	Motor::setup();
+	Net::setup();
+	Temp::setup();
 
 	// Done
 	LOGN("Booted");
 }
 
-void loop() {
+void loop()
+{
 	OTA::loop();
+	Temp::loop();
 	Telnet::loop();
-	
-	//TODO:
 }
