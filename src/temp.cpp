@@ -37,7 +37,12 @@ namespace Temp
 
 	String get_state()
 	{
-		return Net::req(BASE_NAME, 80, "/temperature/advise/");
+		return Net::req(BASE_NAME, 80, "/temperature/advise/room");
+	}
+
+	String get_move()
+	{
+		return Net::req(BASE_NAME, 80, "/temperature/moves/room");
 	}
 
 	void apply_state(bool is_on)
@@ -99,6 +104,34 @@ namespace Temp
 		Util::free_split(strings);
 	}
 
+	void move_dir(bool is_left, int ms)
+	{
+		LOGF("Doing temporary move for %d ms in direction %s\n", ms, is_left ? "left" : "right");
+		if (is_left)
+		{
+			Motor::move_left((double)ms / 1000);
+		}
+		else
+		{
+			Motor::move_right((double)ms / 1000);
+		}
+	}
+
+	void update_move()
+	{
+		String move = get_move();
+		char **strings = Util::split_string((char *)move.c_str(), ' ');
+
+		if (strcmp(strings[0], "?") == 0 || strcmp(strings[0], "0") == 0) {
+			Util::free_split(strings);
+			return;
+		}
+
+		move_dir(strcmp(strings[1], "l") == 0, strtol(strings[0], NULL, 10));
+
+		Util::free_split(strings);
+	}
+
 	int loop_counts = 0;
 	unsigned int last_loop = 0;
 	void loop()
@@ -110,6 +143,7 @@ namespace Temp
 			if (loop_counts == 0)
 			{
 				update_state();
+				update_move();
 			}
 
 			loop_counts = (loop_counts + 1) % UPDATE_INTERVAL_SECS;
